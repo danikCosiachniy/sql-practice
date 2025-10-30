@@ -1,4 +1,5 @@
-SELECT category.name, COUNT(*) AS kol FROM film JOIN (
-    film_category JOIN category ON film_category.category_id = category.category_id
-) ON film.film_id = film_category.film_id
-GROUP BY category.name, film_category.category_id ORDER BY kol DESC;
+SELECT c.name AS category, COUNT(fc.film_id) AS amount
+FROM category AS c
+JOIN film_category AS fc ON c.category_id = fc.category_id
+GROUP BY c.name
+ORDER BY amount DESC;
