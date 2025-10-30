@@ -1,17 +1,16 @@
-SELECT DISTINCT ON (city.city)
-       category.name AS category,
-       city.city,
-       SUM(EXTRACT(EPOCH FROM (rental.return_date - rental.rental_date)))/3600.0 AS hours_total
-FROM category
-JOIN film_category ON category.category_id = film_category.category_id
-JOIN film ON film_category.film_id = film.film_id
-JOIN inventory ON film.film_id = inventory.film_id
-JOIN rental ON inventory.inventory_id = rental.inventory_id
-JOIN customer ON rental.customer_id = customer.customer_id
-JOIN address ON customer.address_id = address.address_id
-JOIN city ON address.city_id = city.city_id
-WHERE category.name ILIKE 'a%' OR city.city LIKE '%-%'
-GROUP BY city.city, category.name
-ORDER BY city.city,
+SELECT DISTINCT ON (c.city)
+       cat.name AS category,
+       c.city,
+       SUM(EXTRACT(EPOCH FROM (r.return_date - r.rental_date)))/3600.0 AS hours_total
+FROM category as cat
+JOIN film_category as fc ON cat.category_id = fc.category_id
+JOIN inventory as i ON fc.film_id = i.film_id
+JOIN rental as r ON i.inventory_id = r.inventory_id
+JOIN customer as cus ON r.customer_id = cus.customer_id
+JOIN address as a ON cus.address_id = a.address_id
+JOIN city as c ON a.city_id = c.city_id
+WHERE cat.name ILIKE 'a%' OR c.city LIKE '%-%'
+GROUP BY c.city, cat.name
+ORDER BY c.city,
          hours_total DESC,
-         category.name;
+         cat.name;
