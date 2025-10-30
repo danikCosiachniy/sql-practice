@@ -27,32 +27,35 @@ dash_city AS (
   JOIN city          AS c  ON a.city_id = c.city_id
   WHERE c.city LIKE '%-%'
   GROUP BY c.city, cat.name
+),
+a_ranked AS (
+  SELECT
+    city, category, hours_total,
+    RANK() OVER (PARTITION BY city ORDER BY hours_total DESC) AS rnk
+  FROM a_city
+),
+dash_ranked AS (
+  SELECT
+    city, category, hours_total,
+    RANK() OVER (PARTITION BY city ORDER BY hours_total DESC) AS rnk
+  FROM dash_city
 )
-
 SELECT
   'starts_with_a' AS bucket,
-  a.city,
-  a.category,
-  a.hours_total
-FROM a_city AS a
-WHERE a.hours_total = (
-  SELECT MAX(a2.hours_total)
-  FROM a_city AS a2
-  WHERE a2.city = a.city
-)
+  city,
+  category,
+  hours_total
+FROM a_ranked
+WHERE rnk = 1
 
 UNION ALL
 
 SELECT
   'has_dash' AS bucket,
-  d.city,
-  d.category,
-  d.hours_total
-FROM dash_city AS d
-WHERE d.hours_total = (
-  SELECT MAX(d2.hours_total)
-  FROM dash_city AS d2
-  WHERE d2.city = d.city
-)
+  city,
+  category,
+  hours_total
+FROM dash_ranked
+WHERE rnk = 1
 
 ORDER BY bucket, city, category;
